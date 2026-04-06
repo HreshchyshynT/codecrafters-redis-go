@@ -23,25 +23,26 @@ The data.
 A final CRLF.
 TODO: consider proper handling of NULL strings
 */
-func decodeBulkString(input string) (string, error) {
+
+func decodeBulkString(input string) (Value, error) {
 	splitted := strings.Split(input, terminator)
 	lenghtString, _ := strings.CutPrefix(splitted[0], "$")
 	length, err := strconv.Atoi(lenghtString)
 	if err != nil {
-		return "", err
+		return EmptyValue(), err
 	}
 	if length == 0 || length == -1 {
-		return "", nil
+		return EmptyValue(), nil
 	}
 
 	if length != len(splitted[1]) {
 		// not sure we need this
-		return "", errors.New("Invalid bulk string. $length != data length")
+		return EmptyValue(), errors.New("Invalid bulk string. $length != data length")
 	}
 
-	return splitted[1], nil
+	return NewString(splitted[1]), nil
 }
 
-func encodeBulkString(input string) string {
-	return fmt.Sprint("$", len(input), terminator, input, terminator)
+func encodeBulkString(input Value) string {
+	return fmt.Sprint("$", len(input.String), terminator, input.String, terminator)
 }
