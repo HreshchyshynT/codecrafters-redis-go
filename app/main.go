@@ -1,8 +1,8 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net"
 	"os"
 )
@@ -15,24 +15,37 @@ func main() {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
 	}
-	connection, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
-	}
 
 	for {
-		// TODO: decide buffer size
-		data := make([]byte, 100)
-		i, err := connection.Read(data)
+		connection, err := l.Accept()
 		if err != nil {
-			log.Fatal("can't read data: ", err)
+			fmt.Println("Error accepting connection: ", err.Error())
+			continue
 		}
+
+		go listenConnection(connection)
+	}
+}
+
+func listenConnection(c net.Conn) {
+	defer c.Close()
+	data := make([]byte, 4<<10) // 4 KB buffer
+	for {
+		// read [0, i] bytes, (i, len(data)) - are stale
+		i, err := c.Read(data)
+
+		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				fmt.Println("Connection closed")
+			} else {
+				fmt.Println("can't read data: ", err.Error())
+			}
+			break
+		}
+
 		if i > 0 {
 			// do not care about received content yet
-			connection.Write([]byte("+PONG\r\n"))
-
+			c.Write([]byte("+PONG\r\n"))
 		}
 	}
-
 }
