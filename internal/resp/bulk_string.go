@@ -2,6 +2,7 @@ package resp
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -39,4 +40,8 @@ func decodeBulkString(input string) (string, error) {
 	}
 
 	return splitted[1], nil
+}
+
+func encodeBulkString(input string) string {
+	return fmt.Sprint("$", len(input), terminator, input, terminator)
 }

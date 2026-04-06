@@ -54,3 +54,38 @@ func TestBulkStringDecode(t *testing.T) {
 		})
 	}
 }
+
+func TestBulkStringEncode(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		data    string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "encoding bulk string hello",
+			want:    "$5\r\nhello\r\n",
+			data:    "hello",
+			wantErr: false,
+		},
+		{
+			name:    "encoding bulk string hello world",
+			want:    "$11\r\nhello world\r\n",
+			data:    "hello world",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := encodeBulkString(tt.data)
+			if tt.wantErr {
+				t.Fatal("Decode() succeeded unexpectedly")
+			}
+
+			if tt.want != got {
+				t.Errorf("Decode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
