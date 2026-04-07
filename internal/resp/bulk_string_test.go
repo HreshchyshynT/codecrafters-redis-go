@@ -48,7 +48,7 @@ func TestBulkStringDecode(t *testing.T) {
 				t.Fatal("Decode() succeeded unexpectedly")
 			}
 
-			if tt.want.Equals(got) {
+			if !tt.want.Equals(got) {
 				t.Errorf("Decode() = %v, want %v", got, tt.want)
 			}
 		})

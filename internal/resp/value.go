@@ -7,13 +7,15 @@ type Type string
 const (
 	String  Type = "string"
 	Array   Type = "array"
+	Integer Type = "integer"
 	nothing Type = "nothing"
 )
 
 type Value struct {
-	Typ    Type
-	String string
-	Array  []Value
+	Typ     Type
+	String  string
+	Array   []Value
+	Integer int
 }
 
 func EmptyValue() Value {
@@ -32,6 +34,8 @@ func (v Value) Equals(other Value) bool {
 	}
 
 	switch v.Typ {
+	case nothing:
+		return true
 	case String:
 		return v.String == other.String
 	case Array:
@@ -41,6 +45,8 @@ func (v Value) Equals(other Value) bool {
 		return slices.EqualFunc(v.Array, other.Array, func(l, r Value) bool {
 			return l.Equals(r)
 		})
+	case Integer:
+		return v.Integer == other.Integer
 	}
 	return false
 }
@@ -57,4 +63,8 @@ func NewArray(value []Value) Value {
 		Typ:   Array,
 		Array: value,
 	}
+}
+
+func NewInt(value int) Value {
+	return Value{Typ: Integer, Integer: value}
 }
