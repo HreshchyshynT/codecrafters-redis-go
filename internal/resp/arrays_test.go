@@ -86,14 +86,61 @@ func Test_decodeArray(t *testing.T) {
 
 func Test_encodeArray(t *testing.T) {
 	tests := []struct {
-		name string // description of this test case
-		want string
-	}{}
+		name    string // description of this test case
+		data    []Value
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "empty array",
+			want: "*0\r\n",
+			data: []Value{},
+		},
+		{
+			name: "array of two bulk strings",
+			want: "*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
+			data: []Value{
+				NewBulkString("hello"),
+				NewBulkString("world"),
+			},
+		},
+		{
+			name: "nested array",
+			want: "*2\r\n*3\r\n:1\r\n:2\r\n:3\r\n*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
+			data: []Value{
+				NewArray([]Value{NewInt(1), NewInt(2), NewInt(3)}),
+				NewArray([]Value{NewBulkString("hello"), NewBulkString("world")}),
+			},
+		},
+		{
+			name: "combined types",
+			want: "*4\r\n*3\r\n:1\r\n:2\r\n:3\r\n$5\r\nhello\r\n+OK\r\n:4\r\n",
+			data: []Value{
+				NewArray([]Value{
+					NewInt(1),
+					NewInt(2),
+					NewInt(3),
+				}),
+				NewBulkString("hello"),
+				NewString("OK"),
+				NewInt(4),
+			},
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := encodeArray()
-			// TODO: update the condition below to compare got with tt.want.
-			if true {
+			got, gotErr := encodeArray(tt.data)
+			if gotErr != nil {
+				if !tt.wantErr {
+					t.Errorf("encodeArray() failed: %v", gotErr)
+				}
+				return
+			}
+			if tt.wantErr {
+				t.Fatal("encodeArray() succeeded unexpectedly")
+			}
+
+			if got != tt.want {
 				t.Errorf("encodeArray() = %v, want %v", got, tt.want)
 			}
 		})

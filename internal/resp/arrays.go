@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -43,6 +44,18 @@ func decodeArray(r *bufio.Reader) (Value, error) {
 	return NewArray(result), nil
 }
 
-func encodeArray() string {
-	return ""
+func encodeArray(array []Value) (string, error) {
+	builder := strings.Builder{}
+
+	builder.WriteString(fmt.Sprint("*", len(array), terminator))
+
+	for _, v := range array {
+		encoded, err := encode(v)
+		if err != nil {
+			return "", err
+		}
+		builder.WriteString(encoded)
+	}
+
+	return builder.String(), nil
 }

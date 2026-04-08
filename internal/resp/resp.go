@@ -34,7 +34,20 @@ func decode(r *bufio.Reader) (Value, error) {
 	}
 }
 
-func encode(body string) ([]byte, error) {
-	// TODO: implement
-	return []byte{}, nil
+func encode(value Value) (string, error) {
+	var encoded string
+	var err error
+	switch value.Typ {
+	case BulkString:
+		encoded = encodeBulkString(value)
+	case String:
+		encoded = encodeString(value)
+	case Array:
+		encoded, err = encodeArray(value.Array)
+	case Integer:
+		encoded = encodeInteger(value)
+	case nothing:
+		encoded = ""
+	}
+	return encoded, err
 }

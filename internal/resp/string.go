@@ -3,6 +3,7 @@ package resp
 import (
 	"bufio"
 	"errors"
+	"fmt"
 )
 
 /*
@@ -23,4 +24,8 @@ func decodeString(r *bufio.Reader) (Value, error) {
 	result := string(bytes[:len(bytes)-terminatorLen])
 
 	return NewString(result), nil
+}
+
+func encodeString(value Value) string {
+	return fmt.Sprint("+", value.String, terminator)
 }
