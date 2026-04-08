@@ -12,6 +12,8 @@ import (
 	"github.com/codecrafters-io/redis-starter-go/internal/resp"
 )
 
+var cache map[string]resp.Value
+
 func main() {
 	// Uncomment the code below to pass the first stage
 	l, err := net.Listen("tcp", "0.0.0.0:6379")
@@ -19,6 +21,7 @@ func main() {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
 	}
+	cache = make(map[string]resp.Value)
 
 	for {
 		connection, err := l.Accept()
@@ -58,6 +61,16 @@ func listenConnection(c net.Conn) {
 					err = encoder.Encode(resp.NewString("PONG"))
 				case "echo":
 					err = encoder.Encode(value.Array[1])
+				case "set":
+					cache[value.Array[1].String] = value.Array[2]
+					encoder.Encode(resp.NewString("OK"))
+				case "get":
+					v, ok := cache[value.Array[1].String]
+					if !ok {
+						encoder.Encode(resp.NewNullBulkString())
+						continue
+					}
+					err = encoder.Encode(v)
 				}
 			}
 			if err != nil {
