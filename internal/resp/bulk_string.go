@@ -32,9 +32,11 @@ func decodeBulkString(r *bufio.Reader) (Value, error) {
 	if err != nil {
 		return EmptyValue(), err
 	}
-	if length == 0 || length == -1 {
-		// TODO: consider proper handling of NULL strings (when length == -1)
+	if length == 0 {
 		return EmptyValue(), nil
+	}
+	if length == -1 {
+		return NewNullBulkString(), nil
 	}
 
 	contentBytes := make([]byte, length)

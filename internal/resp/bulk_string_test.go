@@ -35,7 +35,7 @@ func TestBulkStringDecode(t *testing.T) {
 		{
 			name:    "decoding bulk string NULL",
 			data:    "$-1\r\n",
-			want:    EmptyValue(),
+			want:    NewNullBulkString(),
 			wantErr: false,
 		},
 		{

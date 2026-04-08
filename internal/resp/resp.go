@@ -2,7 +2,6 @@ package resp
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 )
 
@@ -30,7 +29,7 @@ func decode(r *bufio.Reader) (Value, error) {
 	case '+':
 		return decodeString(r)
 	default:
-		return EmptyValue(), errors.New(fmt.Sprintf("invalid data format: %q", first))
+		return EmptyValue(), fmt.Errorf("invalid data format: %q", first)
 	}
 }
 
@@ -48,6 +47,8 @@ func encode(value Value) (string, error) {
 		encoded = encodeInteger(value)
 	case nothing:
 		encoded = ""
+	case NullBulkString:
+		encoded = "$-1\r\n"
 	}
 	return encoded, err
 }

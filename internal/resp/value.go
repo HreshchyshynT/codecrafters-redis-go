@@ -5,11 +5,12 @@ import "slices"
 type Type string
 
 const (
-	BulkString Type = "BulkString"
-	String     Type = "string"
-	Array      Type = "array"
-	Integer    Type = "integer"
-	nothing    Type = "nothing"
+	NullBulkString Type = "nullBulkString"
+	BulkString     Type = "bulkString"
+	String         Type = "string"
+	Array          Type = "array"
+	Integer        Type = "integer"
+	nothing        Type = "nothing"
 )
 
 type Value struct {
@@ -35,8 +36,6 @@ func (v Value) Equals(other Value) bool {
 	}
 
 	switch v.Typ {
-	case nothing:
-		return true
 	case BulkString:
 		fallthrough
 	case String:
@@ -50,6 +49,11 @@ func (v Value) Equals(other Value) bool {
 		})
 	case Integer:
 		return v.Integer == other.Integer
+	// the following Types are equal if the other type is the same
+	case NullBulkString:
+		fallthrough
+	case nothing:
+		return v.Typ == other.Typ
 	}
 	return false
 }
@@ -77,4 +81,8 @@ func NewArray(value []Value) Value {
 
 func NewInt(value int) Value {
 	return Value{Typ: Integer, Integer: value}
+}
+
+func NewNullBulkString() Value {
+	return Value{Typ: NullBulkString}
 }
