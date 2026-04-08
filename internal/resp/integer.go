@@ -1,11 +1,16 @@
 package resp
 
 import (
+	"bufio"
 	"strconv"
 )
 
-func decodeInteger(input string) (Value, error) {
-	value, err := strconv.Atoi(input[1 : len(input)-len(terminator)])
+func decodeInteger(r *bufio.Reader) (Value, error) {
+	bytes, err := r.ReadBytes('\n')
+	if err != nil {
+		return EmptyValue(), err
+	}
+	value, err := strconv.Atoi(string(bytes[:len(bytes)-len(terminator)]))
 	if err != nil {
 		return EmptyValue(), err
 	}

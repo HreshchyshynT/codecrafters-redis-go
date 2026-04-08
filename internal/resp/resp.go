@@ -1,8 +1,8 @@
 package resp
 
 import (
+	"bufio"
 	"errors"
-	"strings"
 )
 
 var InvalidFormat = errors.New("invalid data format")
@@ -14,19 +14,19 @@ const (
 	terminator = "\r\n"
 )
 
-func Decode(data []byte) (Value, error) {
-	input := string(data)
-	if !strings.HasSuffix(input, terminator) {
-		return EmptyValue(), InvalidFormat
+func Decode(r *bufio.Reader) (Value, error) {
+	first, _, err := r.ReadRune()
+	if err != nil {
+		return EmptyValue(), err
 	}
 
-	switch input[0] {
+	switch first {
 	case '$':
-		return decodeBulkString(input)
-	// case '*':
-	// 	return decodeArray(input)
+		return decodeBulkString(r)
+	case '*':
+		return decodeArray(r)
 	case ':':
-		return decodeInteger(input)
+		return decodeInteger(r)
 	default:
 		return EmptyValue(), InvalidFormat
 	}

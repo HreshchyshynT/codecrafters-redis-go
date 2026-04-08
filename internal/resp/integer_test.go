@@ -1,6 +1,10 @@
 package resp
 
-import "testing"
+import (
+	"bufio"
+	"bytes"
+	"testing"
+)
 
 func Test_decodeInteger(t *testing.T) {
 	tests := []struct {
@@ -35,7 +39,9 @@ func Test_decodeInteger(t *testing.T) {
 	}
 	t.Run("decodeInteger tests", func(t *testing.T) {
 		for _, tt := range tests {
-			got, gotErr := decodeInteger(tt.input)
+			r := bufio.NewReader(bytes.NewReader([]byte(tt.input)))
+			r.ReadRune()
+			got, gotErr := decodeInteger(r)
 			if gotErr != nil {
 				if !tt.wantErr {
 					t.Errorf("decodeInteger() want %v failed: %v", tt.want, gotErr)

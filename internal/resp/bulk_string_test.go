@@ -1,6 +1,10 @@
 package resp
 
-import "testing"
+import (
+	"bufio"
+	"bytes"
+	"testing"
+)
 
 func TestBulkStringDecode(t *testing.T) {
 	tests := []struct {
@@ -37,7 +41,10 @@ func TestBulkStringDecode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := decodeBulkString(tt.data)
+			reader := bufio.NewReader(bytes.NewReader([]byte(tt.data)))
+			reader.ReadRune()
+
+			got, gotErr := decodeBulkString(reader)
 			if gotErr != nil {
 				if !tt.wantErr {
 					t.Errorf("Decode() failed: %v", gotErr)

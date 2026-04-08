@@ -1,10 +1,10 @@
 package resp
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 /*
@@ -21,26 +21,38 @@ One or more decimal digits (0..9) as the string's length, in bytes, as an unsign
 The CRLF terminator.
 The data.
 A final CRLF.
-TODO: consider proper handling of NULL strings
 */
 
-func decodeBulkString(input string) (Value, error) {
-	splitted := strings.Split(input, terminator)
-	lenghtString, _ := strings.CutPrefix(splitted[0], "$")
-	length, err := strconv.Atoi(lenghtString)
+func decodeBulkString(r *bufio.Reader) (Value, error) {
+	lengthBytes, _ := r.ReadBytes('\n')
+	if lengthBytes[len(lengthBytes)-2] != '\r' {
+		return EmptyValue(), errors.New("Invalid bulk string: length must be separated with content by \\r\\n")
+	}
+	length, err := strconv.Atoi(string(lengthBytes[:len(lengthBytes)-2]))
 	if err != nil {
 		return EmptyValue(), err
 	}
 	if length == 0 || length == -1 {
+		// TODO: consider proper handling of NULL strings (when length == -1)
 		return EmptyValue(), nil
 	}
 
-	if length != len(splitted[1]) {
-		// not sure we need this
+	contentBytes := make([]byte, length)
+
+	i, err := r.Read(contentBytes)
+	if err != nil {
+		return EmptyValue(), err
+	}
+	last, err := r.ReadString('\n')
+	if err != nil {
+		return EmptyValue(), err
+	}
+
+	if i != length || last != terminator {
 		return EmptyValue(), errors.New("Invalid bulk string. $length != data length")
 	}
 
-	return NewString(splitted[1]), nil
+	return NewString(string(contentBytes)), nil
 }
 
 func encodeBulkString(input Value) string {
