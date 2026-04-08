@@ -10,7 +10,7 @@ func decodeInteger(r *bufio.Reader) (Value, error) {
 	if err != nil {
 		return EmptyValue(), err
 	}
-	value, err := strconv.Atoi(string(bytes[:len(bytes)-len(terminator)]))
+	value, err := strconv.Atoi(string(bytes[:len(bytes)-terminatorLen]))
 	if err != nil {
 		return EmptyValue(), err
 	}

@@ -3,19 +3,23 @@ package resp
 import (
 	"bufio"
 	"errors"
+	"fmt"
+	"log"
 )
-
-var InvalidFormat = errors.New("invalid data format")
 
 const (
 	/*
 		The \r\n (CRLF) is the protocol's terminator, which always separates its parts.
 	*/
-	terminator = "\r\n"
+	terminator    = "\r\n"
+	terminatorLen = 2
 )
 
-func Decode(r *bufio.Reader) (Value, error) {
-	first, _, err := r.ReadRune()
+func decode(r *bufio.Reader) (Value, error) {
+	all, err := r.Peek(r.Size())
+	log.Printf("all bytes: %q\n", string(all))
+
+	first, err := r.ReadByte()
 	if err != nil {
 		return EmptyValue(), err
 	}
@@ -28,11 +32,11 @@ func Decode(r *bufio.Reader) (Value, error) {
 	case ':':
 		return decodeInteger(r)
 	default:
-		return EmptyValue(), InvalidFormat
+		return EmptyValue(), errors.New(fmt.Sprintf("invalid data format: %q", first))
 	}
 }
 
-func Encode(body string) ([]byte, error) {
+func encode(body string) ([]byte, error) {
 	// TODO: implement
 	return []byte{}, nil
 }

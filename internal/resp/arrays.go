@@ -25,7 +25,7 @@ An additional RESP type for every element of the array.
 func decodeArray(r *bufio.Reader) (Value, error) {
 	lenBytes, _ := r.ReadBytes('\n')
 
-	length, err := strconv.Atoi(string(lenBytes[:len(lenBytes)-len(terminator)]))
+	length, err := strconv.Atoi(string(lenBytes[:len(lenBytes)-terminatorLen]))
 	if err != nil {
 		return EmptyValue(), err
 	}
@@ -33,7 +33,7 @@ func decodeArray(r *bufio.Reader) (Value, error) {
 	result := make([]Value, length)
 
 	for i := range length {
-		value, err := Decode(r)
+		value, err := decode(r)
 		if err != nil {
 			return EmptyValue(), fmt.Errorf("Error parsing array: %v", err.Error())
 		}
