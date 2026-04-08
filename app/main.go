@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/resp"
 )
@@ -33,6 +34,7 @@ func main() {
 func listenConnection(c net.Conn) {
 	defer c.Close()
 	decoder := resp.NewDecoder(c)
+	encoder := resp.NewEncoder(c)
 	for {
 		value, err := decoder.Decode()
 		if err != nil {
@@ -46,9 +48,22 @@ func listenConnection(c net.Conn) {
 
 		switch value.Typ {
 		case resp.Array:
-			c.Write([]byte("+array received\r\n"))
+			if len(value.Array) == 0 {
+				continue
+			}
+			commandValue := value.Array[0]
+			if commandValue.Typ == resp.BulkString {
+				switch strings.ToLower(commandValue.String) {
+				case "ping":
+					err = encoder.Encode(resp.NewString("PONG"))
+				case "echo":
+					err = encoder.Encode(value.Array[1])
+				}
+			}
+			if err != nil {
+				log.Println("error encoding response: ", err.Error())
+			}
 		default:
-			c.Write([]byte("+PONG\r\n"))
 		}
 	}
 }
