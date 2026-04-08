@@ -17,13 +17,13 @@ func TestBulkStringDecode(t *testing.T) {
 		{
 			name:    "decoding bulk string hello",
 			data:    "$5\r\nhello\r\n",
-			want:    NewString("hello"),
+			want:    NewBulkString("hello"),
 			wantErr: false,
 		},
 		{
 			name:    "decoding bulk string hello world",
 			data:    "$11\r\nhello world\r\n",
-			want:    NewString("hello world"),
+			want:    NewBulkString("hello world"),
 			wantErr: false,
 		},
 		{
@@ -73,13 +73,13 @@ func TestBulkStringEncode(t *testing.T) {
 		{
 			name:    "encoding bulk string hello",
 			want:    "$5\r\nhello\r\n",
-			data:    NewString("hello"),
+			data:    NewBulkString("hello"),
 			wantErr: false,
 		},
 		{
 			name:    "encoding bulk string hello world",
 			want:    "$11\r\nhello world\r\n",
-			data:    NewString("hello world"),
+			data:    NewBulkString("hello world"),
 			wantErr: false,
 		},
 	}

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 )
 
 const (
@@ -16,9 +15,6 @@ const (
 )
 
 func decode(r *bufio.Reader) (Value, error) {
-	all, err := r.Peek(r.Size())
-	log.Printf("all bytes: %q\n", string(all))
-
 	first, err := r.ReadByte()
 	if err != nil {
 		return EmptyValue(), err
@@ -31,6 +27,8 @@ func decode(r *bufio.Reader) (Value, error) {
 		return decodeArray(r)
 	case ':':
 		return decodeInteger(r)
+	case '+':
+		return decodeString(r)
 	default:
 		return EmptyValue(), errors.New(fmt.Sprintf("invalid data format: %q", first))
 	}

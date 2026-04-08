@@ -52,7 +52,7 @@ func decodeBulkString(r *bufio.Reader) (Value, error) {
 		return EmptyValue(), errors.New("Invalid bulk string. $length != data length")
 	}
 
-	return NewString(string(contentBytes)), nil
+	return NewBulkString(string(contentBytes)), nil
 }
 
 func encodeBulkString(input Value) string {

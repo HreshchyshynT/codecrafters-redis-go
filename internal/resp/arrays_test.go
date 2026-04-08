@@ -3,7 +3,6 @@ package resp
 import (
 	"bufio"
 	"bytes"
-	"log"
 	"testing"
 )
 
@@ -23,8 +22,8 @@ func Test_decodeArray(t *testing.T) {
 			name: "decoding array of two bulk strings",
 			data: "*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
 			want: NewArray([]Value{
-				NewString("hello"),
-				NewString("world"),
+				NewBulkString("hello"),
+				NewBulkString("world"),
 			}),
 		},
 		{
@@ -33,7 +32,7 @@ func Test_decodeArray(t *testing.T) {
 			want: NewArray(
 				[]Value{
 					NewArray([]Value{NewInt(1), NewInt(2), NewInt(3)}),
-					NewArray([]Value{NewString("hello"), NewString("world")}),
+					NewArray([]Value{NewBulkString("hello"), NewBulkString("world")}),
 				},
 			),
 		},
@@ -48,6 +47,20 @@ func Test_decodeArray(t *testing.T) {
 			data:    "*3\r\n*3\r\n:1\r\n:2\r\n:3\r\n*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n",
 			want:    NewArray([]Value{}),
 			wantErr: true,
+		},
+		{
+			name: "combined types",
+			data: "*4\r\n*3\r\n:1\r\n:2\r\n:3\r\n$5\r\nhello\r\n+OK\r\n:4\r\n",
+			want: NewArray([]Value{
+				NewArray([]Value{
+					NewInt(1),
+					NewInt(2),
+					NewInt(3),
+				}),
+				NewBulkString("hello"),
+				NewString("OK"),
+				NewInt(4),
+			}),
 		},
 	}
 	for _, tt := range tests {
