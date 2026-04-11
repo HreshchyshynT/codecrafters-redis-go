@@ -7,12 +7,15 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/resp"
+	"github.com/codecrafters-io/redis-starter-go/internal/store"
 )
 
-var cache map[string]resp.Value
+var cache *store.Store
 
 func main() {
 	// Uncomment the code below to pass the first stage
@@ -21,7 +24,7 @@ func main() {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
 	}
-	cache = make(map[string]resp.Value)
+	cache = store.NewStore()
 
 	for {
 		connection, err := l.Accept()
@@ -61,16 +64,31 @@ func listenConnection(c net.Conn) {
 					err = encoder.Encode(resp.NewString("PONG"))
 				case "echo":
 					err = encoder.Encode(value.Array[1])
+
+					// TODO: should we validate key type here?
 				case "set":
-					cache[value.Array[1].String] = value.Array[2]
+
+					// TODO: refactor this
+					var expireIn time.Duration
+					if len(value.Array) > 3 && strings.ToLower(value.Array[3].String) == "px" {
+						var i int
+						if value.Array[4].Typ == resp.Integer {
+							i = value.Array[4].Integer
+						} else {
+							i, _ = strconv.Atoi(value.Array[4].String)
+						}
+						expireIn = time.Duration(i) * time.Millisecond
+					}
+
+					cache.Put(store.Key(value.Array[1].String), store.NewData(value.Array[2], expireIn))
 					encoder.Encode(resp.NewString("OK"))
 				case "get":
-					v, ok := cache[value.Array[1].String]
+					d, ok := cache.Get(store.Key(value.Array[1].String))
 					if !ok {
 						encoder.Encode(resp.NewNullBulkString())
 						continue
 					}
-					err = encoder.Encode(v)
+					err = encoder.Encode(d.Value)
 				}
 			}
 			if err != nil {
