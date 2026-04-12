@@ -12,12 +12,16 @@ type Data struct {
 	ExpireIn  time.Duration
 }
 
-func NewData(value resp.Value, expireIn time.Duration) Data {
+func NewData(value resp.Value, expireIn ...time.Duration) Data {
+	var expire time.Duration
+	if len(expireIn) > 0 {
+		expire = expireIn[0]
+	}
 
 	return Data{
 		Value:     value,
 		CreatedAt: time.Now(),
-		ExpireIn:  expireIn,
+		ExpireIn:  expire,
 	}
 }
 

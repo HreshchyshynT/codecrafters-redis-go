@@ -69,6 +69,10 @@ func listenConnection(c net.Conn) {
 				case "set":
 
 					// TODO: refactor this
+					// Clients send commands to a Redis server as an array of bulk
+					// strings. The first (and sometimes also the second) bulk string in
+					// the array is the command's name. Subsequent elements of the array
+					// are the arguments for the command.
 					var expireIn time.Duration
 					if len(value.Array) > 3 && strings.ToLower(value.Array[3].String) == "px" {
 						var i int
@@ -89,6 +93,17 @@ func listenConnection(c net.Conn) {
 						continue
 					}
 					err = encoder.Encode(d.Value)
+				case "rpush":
+					d, ok := cache.Get(store.Key(value.Array[1].String))
+					// TODO: what if the data is not array?
+					if !ok {
+						d = store.NewData(resp.NewArray([]resp.Value{value.Array[2]}))
+					} else {
+						newArray := append(d.Value.Array, value.Array[2])
+						d = store.NewData(resp.NewArray(newArray), d.ExpireIn)
+					}
+					cache.Put(store.Key(value.Array[1].String), d)
+					encoder.Encode(resp.NewInt(len(d.Value.Array)))
 				}
 			}
 			if err != nil {
